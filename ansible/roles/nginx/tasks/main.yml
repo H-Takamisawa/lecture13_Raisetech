@@ -1,0 +1,20 @@
+---
+# tasks file for nginx
+- name: Check if nginx is installed
+  ansible.builtin.command:
+    cmd: /usr/sbin/nginx -v
+  register: nginx_check
+  ignore_errors: true
+  changed_when: false
+
+- name: Install nginx
+  ansible.builtin.shell:
+    cmd: amazon-linux-extras install nginx1 -y
+  when: nginx_check.failed
+  register: nginx_install
+  changed_when: false
+  become: yes
+
+#- name: レジスタ確認_nginx_install
+#  ansible.builtin.debug:
+#    var: nginx_install

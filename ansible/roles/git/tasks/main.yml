@@ -1,0 +1,29 @@
+---
+# tasks file for git
+- name: Install git
+  ansible.builtin.yum:
+    name: git
+    state: present
+  become: yes
+
+- name: Check if the directory exists
+  ansible.builtin.stat:
+    path: "{{app_dir}}"
+  register: dir_check
+
+#- name: レジスタ確認_dir_check
+#  ansible.builtin.debug:
+#    var: dir_check
+
+- name: git clone sample-app
+  ansible.builtin.git:
+    repo: "{{repo_url}}"
+    dest: "{{app_dir}}"
+    force: yes
+  register: check_clone
+  ignore_errors: true
+  when: not dir_check.stat.exists
+
+#- name: result git clone
+#  ansible.builtin.debug:
+#     var: check_clone

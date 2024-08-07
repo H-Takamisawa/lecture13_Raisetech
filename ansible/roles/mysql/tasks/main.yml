@@ -1,0 +1,27 @@
+---
+# tasks file for mysql
+- name: Check if mysql is installed
+  ansible.builtin.command:
+    cmd: mysql --version
+  register: mysql_check
+  ignore_errors: true
+  changed_when: false
+
+- name: Install mysql
+  ansible.builtin.yum:
+    name: mysql
+    state: present
+  register: mysql_install
+  become: yes
+  when: mysql_check.failed
+
+- name: Install mysql-devel
+  ansible.builtin.yum:
+    name: mysql-devel
+    state: present
+  become: yes
+  when: mysql_check.failed
+
+#- name: レジスタ確認_mysql_install
+#  ansible.builtin.debug:
+#    var: mysql_install

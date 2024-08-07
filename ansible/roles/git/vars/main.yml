@@ -1,0 +1,4 @@
+---
+# vars file for git
+repo_url: https://github.com/yuta-ushijima/raisetech-live8-sample-app.git
+app_dir: /home/{{ansible_user}}/raisetech-live8-sample-app

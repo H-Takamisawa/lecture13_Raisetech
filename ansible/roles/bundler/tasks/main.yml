@@ -1,0 +1,25 @@
+---
+# tasks file for bundler
+- name: Check if bundler is installed
+  ansible.builtin.command:
+    cmd: bundler _{{bundler_version}}_ --version
+  args:
+    chdir: "{{app_dir}}"
+  register: bundler_check
+  ignore_errors: true
+  changed_when: false
+  #failed_when: "bundler_check.rc != 0"
+
+#- name: レジスタ確認_bundler_check
+#  ansible.builtin.debug:
+#    var: bundler_check
+
+- name: Install bundler
+  ansible.builtin.shell:
+    cmd: /bin/bash -lc "gem install bundler -v {{bundler_version}}"
+  register: bundler_install
+  when: bundler_check.failed
+
+#- name: レジスタ確認_bundler_install
+#  ansible.builtin.debug:
+#    var: bundler_install

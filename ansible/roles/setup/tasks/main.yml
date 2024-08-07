@@ -1,0 +1,18 @@
+---
+# tasks file for setup
+- name: create database.yml
+  ansible.builtin.template:
+    src: templates/database.yml.j2
+    dest: "{{app_dir}}/config/database.yml"
+  changed_when: false
+
+- name: bin/setup
+  ansible.builtin.shell:
+    cmd: /bin/bash -lc "bin/setup"
+  register: setup_result
+  args:
+    chdir: "{{app_dir}}"
+
+#- name: レジスタ確認_setup_result
+#  ansible.builtin.debug:
+#    var: setup_result
