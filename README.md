@@ -13,16 +13,19 @@
 
 ### 1.2 Cloudformationのスタック作成処理を実行
 - 実行結果
- ![1.2 Cloudformationのスタック作成の実行結果](images/1.2_result_CFn)
+ ![1.2 Cloudformationのスタック作成の実行結果](images/1.2_result_CFn.png)
  
 ### 1.3 Ansibleの処理を実行
 - 実行結果
- ![1.3 Ansibleの実行結果](images/1.3_result_ansible)
+ ![1.3 Ansibleの実行結果](images/1.3_result_ansible.png)
  
 ### 1.4 serverspecの処理を実行
 - 実行結果
- ![1.4 serverspecの実行結果](images/1.4_result_serverspec)
+ ![1.4.1 serverspecの実行結果](images/1.4.1_result_serverspec.png)
  
 - テスト結果 
- ![1.5 テスト結果](images/1.5_result_tests.png)
- 
+ ![1.4.2 テスト結果](images/1.4.2_result_tests.png)
+
+### 1.5 Railsアプリの動作確認
+- ALBのDNS名でアクセスして、正常に動作することを確認
+ ![1.5 動作確認](images/1.5_result_app.png)
