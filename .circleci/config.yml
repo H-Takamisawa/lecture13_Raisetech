@@ -36,13 +36,13 @@ jobs:
           command: | 
             set -x
             #EC2publicIP
-            echo export AWS_EC2_IP="$(aws cloudformation describe-stacks --stack-name testIP-CI-resource --query "Stacks[0].Outputs[?OutputKey=='EC2PublicIpAddress'].OutputValue" --output text)" >> $BASH_ENV
+            echo export AWS_EC2_IP="$(aws cloudformation describe-stacks --stack-name lecture13-resource --query "Stacks[0].Outputs[?OutputKey=='EC2PublicIpAddress'].OutputValue" --output text)" >> $BASH_ENV
             #DB_Endpoint
-            echo export AWS_DB_ENDPOINT="$(aws cloudformation describe-stacks --stack-name testIP-CI-resource --query "Stacks[0].Outputs[?OutputKey=='RDSEndpoint'].OutputValue" --output text)" >> $BASH_ENV
+            echo export AWS_DB_ENDPOINT="$(aws cloudformation describe-stacks --stack-name lecture13-resource --query "Stacks[0].Outputs[?OutputKey=='RDSEndpoint'].OutputValue" --output text)" >> $BASH_ENV
             #ALB_host
-            echo export AWS_ALB_HOST="$(aws cloudformation describe-stacks --stack-name testIP-CI-resource --query "Stacks[0].Outputs[?OutputKey=='ALBDNSName'].OutputValue" --output text)" >> $BASH_ENV
+            echo export AWS_ALB_HOST="$(aws cloudformation describe-stacks --stack-name lecture13-resource --query "Stacks[0].Outputs[?OutputKey=='ALBDNSName'].OutputValue" --output text)" >> $BASH_ENV
             #S3bucket
-            echo export AWS_S3_BUCKET="$(aws cloudformation describe-stacks --stack-name testIP-CI-resource --query "Stacks[0].Outputs[?OutputKey=='S3BuckeName'].OutputValue" --output text)" >> $BASH_ENV
+            echo export AWS_S3_BUCKET="$(aws cloudformation describe-stacks --stack-name lecture13-resource --query "Stacks[0].Outputs[?OutputKey=='S3BuckeName'].OutputValue" --output text)" >> $BASH_ENV
       - run:
           name: cat $BASH_ENV
           command: |
