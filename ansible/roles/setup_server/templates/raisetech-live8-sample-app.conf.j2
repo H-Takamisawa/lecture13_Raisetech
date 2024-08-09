@@ -1,0 +1,37 @@
+  # log directory
+  error_log  {{app_dir}}/log/error.log;
+  access_log {{app_dir}}/log/access.log;
+
+  upstream app_server {
+    # for UNIX domain socket setups
+    server unix:{{app_dir}}/tmp/sockets/puma.sock fail_timeout=0;
+  }
+  server {
+    listen 80;
+    server_name _; #publicIP
+
+    # nginx so increasing this is generally safe...
+    # path for static files
+    root {{app_dir}}/public;
+
+    # page cache loading
+    try_files $uri/index.html $uri @app_server;
+
+    location / {
+      # HTTP headers
+      proxy_pass http://app_server;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header Host $http_host;
+      proxy_redirect off;
+    }
+
+    # Rails error pages
+    error_page 500 502 503 504 /500.html;
+
+    location = /500.html {
+      root {{app_dir}}/public;
+    }
+
+    client_max_body_size 4G;
+    keepalive_timeout 5;
+  }

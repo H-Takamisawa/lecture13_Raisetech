@@ -1,0 +1,85 @@
+---
+# tasks file for ruby
+- name: Check if ruby is installed
+  ansible.builtin.command:
+    cmd: ruby --version
+  register: ruby_check
+  ignore_errors: true
+  changed_when: false
+
+#- name: レジスタ確認_ruby_check
+#  ansible.builtin.debug:
+#    var: ruby_check
+
+- name: Install dependencies packages for rvm and ruby
+  ansible.builtin.yum:
+    name: "{{dependencies_pkg}}"
+    state: present
+  vars:
+    dependencies_pkg:
+      - patch
+      - autoconf
+      - automake
+      - bison
+      - gcc-c++
+      - libffi-devel
+      - libtool
+      - patch
+      - readline-devel
+      - sqlite-devel
+      - zlib-devel
+      - glibc-headers
+      - glibc-devel
+      - libyaml-devel
+      - openssl-devel
+  when: ruby_check.failed
+  become: yes
+
+- name: Import GPG keys for rvm
+  ansible.builtin.command: 
+    cmd: gpg2 --keyserver keyserver.ubuntu.com --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
+  when: ruby_check.failed
+  changed_when: false
+
+- name: Install rvm
+  ansible.builtin.shell: 
+    cmd: curl -sSL https://get.rvm.io | bash -s stable
+  when: ruby_check.failed
+  changed_when: false
+
+- name: Source rvm script
+  ansible.builtin.lineinfile:
+    path: /home/{{ansible_user}}/.bashrc
+    line: 'if [[ -s $HOME/.rvm/scripts/rvm ]] ; then source $HOME/.rvm/scripts/rvm ; fi'
+    state: present
+  #ansible.builtin.shell: 
+    #cmd: /bin/bash -lc "source /etc/profile.d/rvm.sh" # この記述だとシステム全体のRVMスクリプトを読み込む
+  #  cmd: /bin/bash -lc "source /.rvm/scripts/rvm"
+  when: ruby_check.failed
+  changed_when: false
+
+- name: load .bashrc
+  ansible.builtin.shell:
+    cmd: /bin/bash -lc "source /home/{{ansible_user}}/.bashrc"
+  when: ruby_check.failed
+  changed_when: false
+
+- name: Install ruby
+  ansible.builtin.shell:
+    cmd: /bin/bash -lc "rvm install ruby-{{ruby_version}}"
+  when: ruby_check.failed
+  environment:
+    PATH: "{{ansible_env.PATH}}:/home/{{ansible_user}}/.rvm/bin"
+  register: ruby_install
+  changed_when: false
+
+#- name: レジスタ確認_ruby_install
+#  ansible.builtin.debug:
+#    var: ruby_install
+
+- name: Set default ruby version
+  ansible.builtin.shell:
+    cmd: /bin/bash -lc "rvm use {{ruby_version}}"
+  environment:
+    PATH: "{{ansible_env.PATH}}:/home/{{ansible_user}}/.rvm/bin"
+  when: ruby_install.changed

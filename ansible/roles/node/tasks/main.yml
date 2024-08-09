@@ -1,0 +1,30 @@
+---
+# tasks file for node
+- name: Check if node is installed
+  ansible.builtin.command:
+    cmd: node -v
+  register: node_check
+  ignore_errors: true
+  changed_when: false
+
+- name: Install nvm
+  ansible.builtin.shell: 
+    cmd: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+  when: node_check.failed
+  changed_when: false
+
+- name: load .bashrc
+  ansible.builtin.shell:
+    cmd: source ~/.bashrc
+    #cmd: source /home/{{ansible_user}}/.bashrc
+  when: node_check.failed
+
+- name: Install Node.js
+  ansible.builtin.shell:
+    cmd: /bin/bash -lc "nvm install {{node_version}}"
+  register: node_install
+  when: node_check.failed
+
+#- name: レジスタ確認_node_install
+#  ansible.builtin.debug:
+#    var: node_install

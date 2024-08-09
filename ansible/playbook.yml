@@ -1,0 +1,22 @@
+---
+- hosts: all
+
+  vars:
+    ansible_user: ec2-user
+    app_dir: /home/{{ansible_user}}/raisetech-live8-sample-app
+    aws_db_pw: "{{lookup('env','AWS_DB_PW')}}"
+    aws_db_endpoint: "{{lookup('env','AWS_DB_ENDPOINT')}}"
+    aws_alb_host: "{{lookup('env','AWS_ALB_HOST')}}"
+    aws_s3_bucket: "{{lookup('env','AWS_S3_BUCKET')}}"
+  
+  roles:
+    - git
+    - ruby
+    - bundler
+    - rails
+    - node
+    - yarn
+    - mysql
+    - setup
+    - nginx
+    - setup_server

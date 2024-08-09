@@ -1,0 +1,143 @@
+---
+# tasks file for setup_server
+- name: edit puma.rb
+  ansible.builtin.template:
+    src: templates/puma.rb.j2
+    dest: "{{app_dir}}/config/puma.rb"
+  changed_when: false
+
+- name: change permission /home/ec2-user
+  ansible.builtin.file:
+    path: /home/{{ansible_user}}
+    mode: 0701
+
+- name: edit nginx.conf
+  ansible.builtin.template:
+    src: templates/nginx.conf.j2
+    dest: "/etc/nginx/nginx.conf"
+  changed_when: false
+  become: yes
+
+- name: edit raisetech-live8-sample-app.conf
+  ansible.builtin.template:
+    src: templates/raisetech-live8-sample-app.conf.j2
+    dest: "/etc/nginx/conf.d/raisetech-live8-sample-app.conf"
+  changed_when: false
+  become: yes
+
+- name: edit puma.service
+  ansible.builtin.template:
+    src: templates/puma.service.j2
+    dest: "/etc/systemd/system/puma.service"
+  changed_when: false
+  become: yes
+
+- name: relode puma.service
+  ansible.builtin.shell:
+    cmd: "systemctl daemon-reload"
+  changed_when: false
+  become: yes
+
+- name: creat socket tmp/sockets
+  ansible.builtin.file:
+    path: "{{app_dir}}/tmp/sockets"
+    state: directory
+    owner: "{{ansible_user}}"
+    mode: 0755
+
+- name: creat socket tmp/pids
+  ansible.builtin.file:
+    path: "{{app_dir}}/tmp/pids"
+    state: directory
+    owner: "{{ansible_user}}"
+    mode: 0755
+
+- name: edit development.rb
+  ansible.builtin.template:
+    src: templates/development.rb.j2
+    dest: "{{app_dir}}/config/environments/development.rb"
+  changed_when: false
+
+- name: edit storage.yml
+  ansible.builtin.template:
+    src: templates/storage.yml.j2
+    dest: "{{app_dir}}/config/storage.yml"
+  changed_when: false
+
+- name: edit application.rb
+  ansible.builtin.template:
+    src: templates/application.rb.j2
+    dest: "{{app_dir}}/config/application.rb"
+  changed_when: false
+
+- name: assets precompile
+  ansible.builtin.shell:
+    cmd: /bin/bash -lc "bin/rails assets:precompile"
+  args:
+    chdir: "{{app_dir}}"
+  changed_when: false
+
+#----------------------------------------
+- name: check install imagemagick
+  ansible.builtin.shell:
+    cmd: magick --version
+  register: check_imagemagick
+  ignore_errors: true
+  changed_when: false
+
+- name: install epel
+  ansible.builtin.yum:
+    name: https://dl.fedoraproject.org/pub/archive/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm
+    state: present
+  when: check_imagemagick.failed
+  become: yes
+
+- name: install yum-utils
+  ansible.builtin.yum:
+   name: yum-utils
+   state: present
+  when: check_imagemagick.failed
+  become: yes
+
+- name: install remi 
+  ansible.builtin.yum:
+    name: http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+    state: present
+  when: check_imagemagick.failed
+  become: yes
+
+- name: enable remi
+  ansible.builtin.shell:
+    cmd: yum-config-manager --enable remi
+  when: check_imagemagick.failed
+  become: yes
+
+- name: install ImageMagick
+  ansible.builtin.yum:
+    name: "{{imagemagick_pkgs}}"
+    state: present
+  vars:
+    imagemagick_pkgs:
+      - ImageMagick7
+      - ImageMagick7-devel
+    enablerepo: remi
+  register: check_install_imagemagick
+  when: check_imagemagick.failed
+  become: yes
+
+#- name: レジスタ確認_check_install_imagemagick
+#  ansible.builtin.debug:
+#    var: check_install_imagemagick
+#----------------------------------------
+
+- name: start nginx
+  ansible.builtin.service:
+    name: nginx
+    state: restarted
+  become: yes
+
+- name: start puma
+  ansible.builtin.service:
+    name: puma
+    state: restarted
+  become: yes

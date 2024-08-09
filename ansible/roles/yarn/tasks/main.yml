@@ -1,0 +1,30 @@
+---
+# tasks file for yarn
+- name: Check if yarn is installed
+  ansible.builtin.command:
+    cmd: yarn -v
+  register: yarn_check
+  ignore_errors: true
+  changed_when: false
+
+- name: Install yarn
+  ansible.builtin.shell:
+    cmd: /bin/bash -lc "npm install -g yarn@{{yarn_version}}"
+  register: yarn_install
+  when: yarn_check.failed
+
+#- name: レジスタ確認_yarn_install
+#  ansible.builtin.debug:
+#    var: yarn_install
+
+- name: Install dependencies packages
+  ansible.builtin.shell:
+    cmd: /bin/bash -lc "yarn install"
+  register: result_cmd
+  args:
+    chdir: "{{app_dir}}"
+  when: yarn_check.failed
+
+#- name: レジスタ確認_result_cmd
+#  ansible.builtin.debug:
+#    var: result_cmd
