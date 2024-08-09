@@ -7,6 +7,7 @@ orbs:
   ansible-playbook: orbss/ansible-playbook@0.0.5
   ruby: circleci/ruby@2.1.3
   
+  
 # Define a job to be invoked later in a workflow.
 # See: https://circleci.com/docs/jobs-steps/#jobs-overview & https://circleci.com/docs/configuration-reference/#jobs
 jobs:
@@ -19,21 +20,74 @@ jobs:
           aws_secret_access_key: AWS_SECRET_ACCESS_KEY
           region: AWS_DEFAULT_REGION
       - aws-cloudformation/deploy:
-          stack-name: test-CI-network
+          stack-name: lecture13-network
           template-file-path: cloudformation/lecture13-network.yml
       - aws-cloudformation/deploy:
-          stack-name: test-CI-security
+          stack-name: lecture13-security
           template-file-path: cloudformation/lecture13-security.yml
       - aws-cloudformation/deploy:
-          stack-name: test-CI-resource
+          stack-name: lecture13-resource
           template-file-path: cloudformation/lecture13-resource.yml
           capabilities: CAPABILITY_NAMED_IAM
           parameter-overrides: RDSpassword=$AWS_DB_PW
 
+      - run:
+          name: set environment variable
+          command: | 
+            set -x
+            #EC2publicIP
+            echo export AWS_EC2_IP="$(aws cloudformation describe-stacks --stack-name testIP-CI-resource --query "Stacks[0].Outputs[?OutputKey=='EC2PublicIpAddress'].OutputValue" --output text)" >> $BASH_ENV
+            #DB_Endpoint
+            echo export AWS_DB_ENDPOINT="$(aws cloudformation describe-stacks --stack-name testIP-CI-resource --query "Stacks[0].Outputs[?OutputKey=='RDSEndpoint'].OutputValue" --output text)" >> $BASH_ENV
+            #ALB_host
+            echo export AWS_ALB_HOST="$(aws cloudformation describe-stacks --stack-name testIP-CI-resource --query "Stacks[0].Outputs[?OutputKey=='ALBDNSName'].OutputValue" --output text)" >> $BASH_ENV
+            #S3bucket
+            echo export AWS_S3_BUCKET="$(aws cloudformation describe-stacks --stack-name testIP-CI-resource --query "Stacks[0].Outputs[?OutputKey=='S3BuckeName'].OutputValue" --output text)" >> $BASH_ENV
+      - run:
+          name: cat $BASH_ENV
+          command: |
+              cat $BASH_ENV
+      #- run:
+      #    name: print environment variable
+      #    command: |
+      #        source $BASH_ENV
+      #        echo $AWS_EC2_IP
+      #        echo $AWS_DB_ENDPOINT
+      #        echo $AWS_ALB_HOST
+      #        echo $AWS_S3_BUCKET
+      - run:
+          name: copy $BASH_ENV
+          command:
+              cp $BASH_ENV env_var.sh
+      - persist_to_workspace:
+          root: .
+          paths:
+            - env_var.sh
+  
   execute-ansible:
     executor: ansible-playbook/default
     steps:
       - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: check env_var.sh
+          command: |
+            source env_var.sh
+            cat env_var.sh
+      - run:
+          name: read env_var.sh
+          command: |
+            set -x
+            cat env_var.sh >> $BASH_ENV
+            cat $BASH_ENV
+      #- run:
+      #    name: print environment variable
+      #    command: |
+      #      echo $AWS_EC2_IP
+      #      echo $AWS_DB_ENDPOINT
+      #      echo $AWS_ALB_HOST
+      #      echo $AWS_S3_BUCKET
       - add_ssh_keys:
           fingerprints:
             - SHA256:6CLyypQhbbC8Wo5wlpz7iS8AwYoOPy/qLhkQrePX5t4
@@ -47,6 +101,19 @@ jobs:
     executor: ruby/default
     steps:
       - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: check env_var.sh
+          command: |
+            source env_var.sh
+            cat env_var.sh
+      - run:
+          name: read env_var.sh
+          command: |
+            set -x
+            cat env_var.sh >> $BASH_ENV
+            cat $BASH_ENV
       - ruby/install:
           version: 3.2.3
       - run:
