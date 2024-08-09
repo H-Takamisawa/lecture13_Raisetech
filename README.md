@@ -6,9 +6,6 @@
 - AWS_SECRET_ACCESS_KEY
 - AWS_DEFAULT_REGION
 - AWS_DB_PW
-- AWS_DB_ENDPOINT
-- AWS_ALB_HOST
-- AWS_S3_BUCKET
  ![CircleCI環境変数一覧](images/1.1_environment_variables.png)
 
 ### 1.2 Cloudformationのスタック作成処理を実行
