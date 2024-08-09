@@ -17,7 +17,7 @@ end
 
 # サーバー情報の設定
 #host = ENV['TARGET_HOST'] 
-host = '18.181.198.40'  #ホストのIPアドレスを直接指定
+host = ENV['AWS_EC2_IP']
 
 options = Net::SSH::Config.for(host)
 
