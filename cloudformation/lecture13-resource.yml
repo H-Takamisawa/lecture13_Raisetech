@@ -287,6 +287,6 @@ Outputs:
     Description: DNS Name of ALB
     Value:  !GetAtt MyALB.DNSName
 
-  S3BuckeArn:
-    Description: ARN of S3 Bucket
-    Value:  !GetAtt MyS3Bucket.Arn
+  S3BuckeName:
+    Description: Name of S3 Bucket
+    Value:  !Ref MyS3Bucket
